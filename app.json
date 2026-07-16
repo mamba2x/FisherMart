@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "FisherMart",
+    "slug": "fishermart",
+    "version": "1.0.0",
+    "description": "Offline-capable e-commerce app for riverine fishing communities in Delta State",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A6E9F"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.fishermart.app"
+    },
+    "android": {
+      "package": "com.fishermart.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
+        "backgroundColor": "#0A6E9F"
+      },
+      "permissions": ["ACCESS_NETWORK_STATE", "INTERNET"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-font"
+    ],
+    "extra": {
+      "supabaseUrl": "",
+      "supabaseAnonKey": ""
+    }
+  }
+}

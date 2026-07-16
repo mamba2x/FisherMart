@@ -1,0 +1,8 @@
+import 'react-native-gesture-handler';
+import 'react-native-get-random-values';
+import React from 'react';
+import { AppNavigator } from './src/navigation/AppNavigator';
+
+export default function App() {
+  return <AppNavigator />;
+}
