@@ -21,28 +21,6 @@ allprojects {
     mavenCentral()
     maven { url 'https://www.jitpack.io' }
   }
-  
-  afterEvaluate { project ->
-      if (project.hasProperty('java')) {
-          project.java {
-              toolchain {
-                  languageVersion = JavaLanguageVersion.of(23)
-              }
-          }
-      }
-      if (project.hasProperty('android')) {
-          if (project.android.hasProperty('externalNativeBuild') && project.android.externalNativeBuild.hasProperty('cmake')) {
-              project.android.externalNativeBuild.cmake.version = "3.30.5"
-              project.android.externalNativeBuild.cmake.buildStagingDirectory = new File("C:/F/cxx/${project.name}")
-          }
-          project.android.ndkVersion = "27.1.12297006"
-      }
-      project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile.class).configureEach {
-          kotlinOptions {
-              jvmTarget = "17"
-          }
-      }
-  }
 }
 
 apply plugin: "expo-root-project"

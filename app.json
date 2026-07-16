@@ -24,14 +24,18 @@
         "monochromeImage": "./assets/android-icon-monochrome.png",
         "backgroundColor": "#0A6E9F"
       },
-      "permissions": ["ACCESS_NETWORK_STATE", "INTERNET"]
+      "permissions": [
+        "ACCESS_NETWORK_STATE",
+        "INTERNET"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-sqlite",
-      "expo-font"
+      "expo-font",
+      "expo-status-bar"
     ],
     "extra": {
       "supabaseUrl": "",
