@@ -26,7 +26,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       Animated.timing(waveAnim, {
         toValue: 1,
         duration: 3000,
-        easing: Easing.inOut(Easing.sine),
+        easing: Easing.inOut(Easing.sin),
         useNativeDriver: true,
       })
     ).start();

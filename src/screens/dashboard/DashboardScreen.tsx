@@ -17,13 +17,14 @@ import { OfflineBanner } from '../../components/common/OfflineBanner';
 import { ProductCard } from '../../components/common/ProductCard';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '../../theme';
 import { getRevenueStats } from '../../services/orderService';
+import { retryAllFailed } from '../../services/syncService';
 
 const formatPrice = (n: number) =>
   `₦${n.toLocaleString('en-NG', { minimumFractionDigits: 0 })}`;
 
 export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { products, fetchProducts, stats, fetchStats } = useInventoryStore();
-  const { isSyncing, pendingCount, lastSyncTime, triggerSync, refreshPendingCount } = useSyncStore();
+  const { isSyncing, pendingCount, failedCount, lastSyncTime, triggerSync, refreshPendingCount, refreshFailedCount } = useSyncStore();
   const { isConnected } = useNetworkStatus();
   const { profile } = useAuthStore();
   useSync(); // Auto-sync when network reconnects
@@ -39,6 +40,7 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
     await fetchProducts();
     await fetchStats();
     await refreshPendingCount();
+    await refreshFailedCount();
     const rev = await getRevenueStats();
     setRevenueStats(rev);
   }, []);
@@ -156,6 +158,32 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
+          </TouchableOpacity>
+        )}
+
+        {/* Failed Sync Alert */}
+        {failedCount > 0 && (
+          <TouchableOpacity
+            style={[styles.syncAlert, { backgroundColor: Colors.errorLight + '20', borderColor: Colors.error + '40' }]}
+            onPress={async () => {
+              if (isConnected) {
+                await retryAllFailed();
+                triggerSync();
+                Alert.alert('Retrying', 'Retrying all failed syncs...');
+              } else {
+                Alert.alert('Offline', 'Connect to internet to retry syncs');
+              }
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="close-circle-outline" size={20} color={Colors.error} />
+            <View style={styles.syncAlertText}>
+              <Text style={[styles.syncAlertTitle, { color: Colors.error }]}>{failedCount} items failed to sync</Text>
+              <Text style={styles.syncAlertSub}>
+                {isConnected ? 'Tap to retry all' : 'Connect to internet to retry'}
+              </Text>
+            </View>
+            <Ionicons name="refresh-outline" size={16} color={Colors.error} />
           </TouchableOpacity>
         )}
 

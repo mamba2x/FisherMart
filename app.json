@@ -38,8 +38,8 @@
       "expo-status-bar"
     ],
     "extra": {
-      "supabaseUrl": "",
-      "supabaseAnonKey": ""
+      "supabaseUrl": "https://fhdmnuoxkwwvperxlmhn.supabase.co",
+      "supabaseAnonKey": "sb_publishable_LD6r4X9bya9CCpbTxDIFRQ_WimlDHTX"
     }
   }
 }

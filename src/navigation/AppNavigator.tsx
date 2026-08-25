@@ -9,6 +9,8 @@ import { MainTabNavigator } from './MainTabNavigator';
 import { AuthNavigator } from './AuthNavigator';
 import { SplashScreen } from '../screens/auth/SplashScreen';
 import { useAuthStore } from '../store/useAuthStore';
+import { useSyncStore } from '../store/useSyncStore';
+import { ensureAnonymousSession } from '../services/authService';
 import { Colors, Typography } from '../theme';
 
 type AppPhase = 'splash' | 'loading' | 'ready';
@@ -19,12 +21,20 @@ export const AppNavigator: React.FC = () => {
 
   const { isLoggedIn, initAuth, loading: authLoading } = useAuthStore();
 
-  // After splash finishes → initialize DB + auth session
+  // After splash finishes → initialize DB + auth session + sync metadata
   const handleSplashFinish = async () => {
     setPhase('loading');
     try {
       await initializeDatabase();
       await initAuth();
+      await ensureAnonymousSession();
+      
+      // Auto-trigger sync on start if pending items exist
+      const store = useSyncStore.getState();
+      await store.refreshPendingCount();
+      if (store.pendingCount > 0) {
+        store.triggerSync();
+      }
     } catch (e: any) {
       setDbError(e.message);
     } finally {

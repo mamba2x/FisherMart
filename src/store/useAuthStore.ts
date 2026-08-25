@@ -19,7 +19,7 @@ interface AuthState {
   // Actions
   initAuth: () => Promise<void>;
   login: (name: string, phone: string) => Promise<boolean>;
-  register: (data: Omit<FisherProfile, 'id' | 'created_at'>) => Promise<boolean>;
+  register: (data: Omit<FisherProfile, 'id' | 'owner_id' | 'auth_pending' | 'created_at'>) => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
 }

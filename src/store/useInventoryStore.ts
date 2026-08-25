@@ -15,7 +15,7 @@ interface InventoryState {
   stats: { totalValue: number; count: number; pendingSync: number };
 
   fetchProducts: (category?: string) => Promise<void>;
-  addProduct: (data: Omit<Product, 'id' | 'sync_status' | 'created_at' | 'updated_at' | 'synced_at' | 'is_deleted'>) => Promise<Product>;
+  addProduct: (data: Omit<Product, 'id' | 'owner_id' | 'sync_status' | 'created_at' | 'updated_at' | 'synced_at' | 'is_deleted'>) => Promise<Product>;
   editProduct: (id: string, data: Partial<Product>) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   fetchStats: () => Promise<void>;

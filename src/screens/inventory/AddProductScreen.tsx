@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useInventoryStore } from '../../store/useInventoryStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { Colors, Typography, Spacing, BorderRadius, Shadow, FISH_CATEGORIES, CategoryColors } from '../../theme';
 import { DELTA_STATE_ZONES, FISH_UNITS } from '../../utils/constants';
 import { Product } from '../../database/types';
@@ -20,16 +21,19 @@ export const AddProductScreen: React.FC<Props> = ({ navigation, route }) => {
   const isEditing = !!editProduct;
 
   const { addProduct, editProduct: updateProd } = useInventoryStore();
+  const { profile } = useAuthStore();
 
   const [name, setName] = useState(editProduct?.name ?? '');
+  const [fishSpecies, setFishSpecies] = useState(editProduct?.fish_species ?? '');
+  const [catchDate, setCatchDate] = useState(editProduct?.catch_date ?? '');
   const [category, setCategory] = useState(editProduct?.category ?? FISH_CATEGORIES[0]);
   const [quantity, setQuantity] = useState(String(editProduct?.quantity ?? ''));
   const [unit, setUnit] = useState(editProduct?.unit ?? 'kg');
   const [price, setPrice] = useState(String(editProduct?.price_per_unit ?? ''));
   const [description, setDescription] = useState(editProduct?.description ?? '');
-  const [location, setLocation] = useState(editProduct?.location ?? '');
-  const [fisherName, setFisherName] = useState(editProduct?.fisher_name ?? '');
-  const [fisherPhone, setFisherPhone] = useState(editProduct?.fisher_phone ?? '');
+  const [location, setLocation] = useState(editProduct?.location ?? profile?.zone ?? '');
+  const [fisherName, setFisherName] = useState(editProduct?.fisher_name ?? profile?.name ?? '');
+  const [fisherPhone, setFisherPhone] = useState(editProduct?.fisher_phone ?? profile?.phone ?? '');
   const [isAvailable, setIsAvailable] = useState(editProduct?.is_available ?? true);
   const [saving, setSaving] = useState(false);
 
@@ -49,6 +53,8 @@ export const AddProductScreen: React.FC<Props> = ({ navigation, route }) => {
       const data = {
         name: name.trim(),
         category,
+        fish_species: fishSpecies.trim() || undefined,
+        catch_date: catchDate.trim() || undefined,
         quantity: parseFloat(quantity),
         unit,
         price_per_unit: parseFloat(price),
@@ -93,6 +99,8 @@ export const AddProductScreen: React.FC<Props> = ({ navigation, route }) => {
           <Text style={styles.sectionLabel}>Basic Information</Text>
           <View style={styles.card}>
             <InputField label="Product Name *" value={name} onChangeText={setName} placeholder="e.g. Fresh Catfish" />
+            <InputField label="Fish Species / Local Name" value={fishSpecies} onChangeText={setFishSpecies} placeholder="e.g. Obokun, Clarias gariepinus" />
+            <InputField label="Catch Date" value={catchDate} onChangeText={setCatchDate} placeholder="e.g. YYYY-MM-DD" />
             <InputField label="Description" value={description} onChangeText={setDescription} placeholder="Optional details about this product" multiline />
           </View>
 

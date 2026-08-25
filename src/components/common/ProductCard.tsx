@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../../database/types';
+import { SyncStatusBadge } from './SyncStatusBadge';
 import {
   Colors, Typography, Spacing, BorderRadius, Shadow, CategoryColors, CategoryIcons,
 } from '../../theme';
@@ -40,6 +41,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <View style={styles.compactRight}>
           <Text style={styles.compactPrice}>{formatPrice(product.price_per_unit)}</Text>
           <Text style={styles.compactPer}>/{product.unit}</Text>
+          {showSyncBadge && (
+            <View style={{ marginTop: 4 }}>
+              <SyncStatusBadge status={product.sync_status} showText={false} />
+            </View>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -51,14 +57,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <View style={[styles.imageArea, { backgroundColor: categoryColor + '15' }]}>
         <Ionicons name={categoryIcon as any} size={48} color={categoryColor} />
         {/* Sync status badge */}
-        {showSyncBadge && product.sync_status === 'pending' && (
+        {showSyncBadge && (
           <View style={styles.syncBadge}>
-            <Ionicons name="cloud-upload-outline" size={12} color={Colors.textInverse} />
+            <SyncStatusBadge status={product.sync_status} showText={false} />
           </View>
         )}
         {/* Availability badge */}
         {!product.is_available && (
-          <View style={[styles.syncBadge, { backgroundColor: Colors.error }]}>
+          <View style={[styles.syncBadge, { backgroundColor: Colors.error, top: 40 }]}>
             <Text style={styles.badgeText}>Unavailable</Text>
           </View>
         )}

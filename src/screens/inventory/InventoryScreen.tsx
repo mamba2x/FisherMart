@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   TextInput, RefreshControl, Alert,
@@ -6,32 +6,50 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useInventoryStore } from '../../store/useInventoryStore';
+import { useSyncStore } from '../../store/useSyncStore';
+import { retryRecord } from '../../services/syncService';
 import { ProductCard } from '../../components/common/ProductCard';
 import { Colors, Typography, Spacing, BorderRadius, Shadow, FISH_CATEGORIES } from '../../theme';
 import { Product } from '../../database/types';
 
-const ALL_CATEGORIES = ['All', ...FISH_CATEGORIES];
+const ALL_CATEGORIES = ['All', 'Failed Sync', ...FISH_CATEGORIES];
 
 export const InventoryScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { products, fetchProducts, removeProduct, loading } = useInventoryStore();
+  const { products, fetchProducts, removeProduct } = useInventoryStore();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    fetchProducts(activeCategory === 'All' ? undefined : activeCategory);
+    fetchProducts(
+      activeCategory === 'All' || activeCategory === 'Failed Sync'
+        ? undefined
+        : activeCategory
+    );
   }, [activeCategory]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchProducts(activeCategory === 'All' ? undefined : activeCategory);
+    await fetchProducts(
+      activeCategory === 'All' || activeCategory === 'Failed Sync'
+        ? undefined
+        : activeCategory
+    );
     setRefreshing(false);
   };
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.location?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = products.filter((p) => {
+    const matchesSearch =
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.location?.toLowerCase().includes(search.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (activeCategory === 'Failed Sync') {
+      return p.sync_status === 'failed';
+    }
+    return true;
+  });
 
   const confirmDelete = (product: Product) => {
     Alert.alert(
@@ -126,6 +144,18 @@ export const InventoryScreen: React.FC<{ navigation: any }> = ({ navigation }) =
               <ProductCard product={item} compact showSyncBadge />
             </TouchableOpacity>
             <View style={styles.itemActions}>
+              {item.sync_status === 'failed' && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    await retryRecord(item.id, 'products');
+                    useSyncStore.getState().triggerSync();
+                    Alert.alert('Retrying', 'Sync retry triggered');
+                  }}
+                  style={[styles.editBtn, { backgroundColor: Colors.warningLight + '25' }]}
+                >
+                  <Ionicons name="refresh-outline" size={16} color={Colors.warning} />
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={() => navigation.navigate('AddProduct', { product: item })}
                 style={styles.editBtn}

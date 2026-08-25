@@ -2,8 +2,11 @@
 
 export interface Product {
   id: string;
+  owner_id?: string;
   name: string;
   category: string;
+  fish_species?: string;
+  catch_date?: string;
   quantity: number;
   unit: string;
   price_per_unit: number;
@@ -14,6 +17,7 @@ export interface Product {
   image_url?: string;
   is_available: boolean;
   sync_status: SyncStatus;
+  last_sync_error?: string;
   created_at: string;
   updated_at: string;
   synced_at?: string;
@@ -22,16 +26,21 @@ export interface Product {
 
 export interface Order {
   id: string;
+  owner_id?: string;
+  seller_id?: string;
   product_id: string;
   product_name: string;
   buyer_name: string;
   buyer_phone: string;
+  seller_name?: string;
+  seller_phone?: string;
   quantity: number;
   unit: string;
   total_price: number;
   status: OrderStatus;
   notes?: string;
   sync_status: SyncStatus;
+  last_sync_error?: string;
   created_at: string;
   updated_at: string;
   synced_at?: string;
@@ -40,7 +49,7 @@ export interface Order {
 
 export interface SyncQueueItem {
   id?: number;
-  operation: 'INSERT' | 'UPDATE' | 'DELETE';
+  operation: 'INSERT' | 'UPDATE' | 'DELETE' | 'ORDER_STATUS_UPDATE';
   table_name: string;
   record_id: string;
   payload: string; // JSON stringified data

@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_CONFIGURED } from '../utils/constants';
 
 // ── Supabase client (null when credentials are not configured) ─────────────
@@ -12,7 +13,10 @@ let _supabase: SupabaseClient | null = null;
 if (SUPABASE_CONFIGURED) {
   _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
-      persistSession: false,
+      storage: AsyncStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: false,
     },
     realtime: {
       params: {
@@ -32,5 +36,15 @@ export const testSupabaseConnection = async (): Promise<boolean> => {
     return !error;
   } catch {
     return false;
+  }
+};
+
+export const getAuthUid = async (): Promise<string | null> => {
+  if (!SUPABASE_CONFIGURED || !_supabase) return null;
+  try {
+    const { data } = await _supabase.auth.getSession();
+    return data.session?.user?.id ?? null;
+  } catch {
+    return null;
   }
 };

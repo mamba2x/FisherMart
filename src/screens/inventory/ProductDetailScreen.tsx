@@ -25,7 +25,7 @@ export const ProductDetailScreen: React.FC<{ navigation: any; route: any }> = ({
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Order', onPress: async (input) => {
+          text: 'Order', onPress: async (input?: string) => {
             if (!input) return;
             await createOrder({
               product_id: product.id,

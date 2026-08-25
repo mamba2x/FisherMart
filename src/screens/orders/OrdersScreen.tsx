@@ -5,6 +5,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { getAllOrders, updateOrderStatus } from '../../services/orderService';
+import { retryRecord } from '../../services/syncService';
+import { useSyncStore } from '../../store/useSyncStore';
+import { SyncStatusBadge } from '../../components/common/SyncStatusBadge';
 import { Order, OrderStatus } from '../../database/types';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '../../theme';
 
@@ -105,11 +108,18 @@ export const OrdersScreen: React.FC = () => {
                   <Ionicons name={STATUS_ICON[item.status] as any} size={13} color={color} />
                   <Text style={[styles.statusText, { color }]}>{item.status.toUpperCase()}</Text>
                 </View>
-                {item.sync_status === 'pending' && (
-                  <View style={styles.syncBadge}>
-                    <Ionicons name="cloud-upload-outline" size={12} color={Colors.warning} />
-                  </View>
-                )}
+                <SyncStatusBadge
+                  status={item.sync_status}
+                  showText={false}
+                  onRetry={
+                    item.sync_status === 'failed'
+                      ? async () => {
+                          await retryRecord(item.id, 'orders');
+                          useSyncStore.getState().triggerSync();
+                        }
+                      : undefined
+                  }
+                />
                 <Text style={styles.orderDate}>
                   {new Date(item.created_at).toLocaleDateString('en-NG', { dateStyle: 'short' })}
                 </Text>

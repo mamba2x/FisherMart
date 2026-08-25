@@ -1,6 +1,7 @@
 import { getDb } from '../database/db';
 import { Product } from '../database/types';
 import { queueMutation } from './syncService';
+import { getOwnerIdFromAuth } from './authService';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -54,15 +55,17 @@ export const getProductById = async (id: string): Promise<Product | null> => {
 
 // ── Create product ─────────────────────────────────────────────────────────
 export const createProduct = async (
-  data: Omit<Product, 'id' | 'sync_status' | 'created_at' | 'updated_at' | 'synced_at' | 'is_deleted'>
+  data: Omit<Product, 'id' | 'owner_id' | 'sync_status' | 'created_at' | 'updated_at' | 'synced_at' | 'is_deleted'>
 ): Promise<Product> => {
   const db = await getDb();
   const now = new Date().toISOString();
   const id = uuidv4();
+  const owner_id = await getOwnerIdFromAuth();
 
   const product: Product = {
     ...data,
     id,
+    owner_id,
     sync_status: 'pending',
     created_at: now,
     updated_at: now,
@@ -71,15 +74,14 @@ export const createProduct = async (
 
   await db.runAsync(
     `INSERT INTO products
-      (id, name, category, quantity, unit, price_per_unit, description,
+      (id, owner_id, name, category, fish_species, catch_date, quantity, unit, price_per_unit, description,
        location, fisher_name, fisher_phone, image_url, is_available,
        sync_status, created_at, updated_at, is_deleted)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
-      product.id, product.name, product.category, product.quantity,
-      product.unit, product.price_per_unit, product.description ?? null,
-      product.location ?? null, product.fisher_name ?? null,
-      product.fisher_phone ?? null, product.image_url ?? null,
+      product.id, product.owner_id ?? null, product.name, product.category, product.fish_species ?? null, product.catch_date ?? null,
+      product.quantity, product.unit, product.price_per_unit, product.description ?? null,
+      product.location ?? null, product.fisher_name ?? null, product.fisher_phone ?? null, product.image_url ?? null,
       product.is_available ? 1 : 0, 'pending',
       product.created_at, product.updated_at, 0,
     ]
@@ -100,6 +102,7 @@ export const updateProduct = async (
   await db.runAsync(
     `UPDATE products SET
       name=COALESCE(?,name), category=COALESCE(?,category),
+      fish_species=COALESCE(?,fish_species), catch_date=COALESCE(?,catch_date),
       quantity=COALESCE(?,quantity), unit=COALESCE(?,unit),
       price_per_unit=COALESCE(?,price_per_unit), description=COALESCE(?,description),
       location=COALESCE(?,location), fisher_name=COALESCE(?,fisher_name),
@@ -108,6 +111,7 @@ export const updateProduct = async (
     WHERE id=?`,
     [
       data.name ?? null, data.category ?? null,
+      data.fish_species ?? null, data.catch_date ?? null,
       data.quantity ?? null, data.unit ?? null,
       data.price_per_unit ?? null, data.description ?? null,
       data.location ?? null, data.fisher_name ?? null,
@@ -154,8 +158,11 @@ export const getInventoryStats = async () => {
 // ── Map SQLite row to TypeScript Product ──────────────────────────────────
 const mapRowToProduct = (row: any): Product => ({
   id: row.id,
+  owner_id: row.owner_id,
   name: row.name,
   category: row.category,
+  fish_species: row.fish_species,
+  catch_date: row.catch_date,
   quantity: row.quantity,
   unit: row.unit,
   price_per_unit: row.price_per_unit,
@@ -166,6 +173,7 @@ const mapRowToProduct = (row: any): Product => ({
   image_url: row.image_url,
   is_available: row.is_available === 1,
   sync_status: row.sync_status,
+  last_sync_error: row.last_sync_error,
   created_at: row.created_at,
   updated_at: row.updated_at,
   synced_at: row.synced_at,

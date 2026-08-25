@@ -18,7 +18,7 @@ interface MarketProductDetailProps {
   navigation: any;
 }
 
-export const MarketProductDetail: React.FC<MarketProductDetailProps> = ({ route, navigation }) => {
+export const MarketProductDetail: React.FC<any> = ({ route, navigation }) => {
   const { productId } = route.params;
   const { profile } = useAuthStore();
   const [product, setProduct] = useState<Product | null>(null);
